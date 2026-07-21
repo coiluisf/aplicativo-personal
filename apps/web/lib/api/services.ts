@@ -153,6 +153,44 @@ export const sessionServices = {
 };
 
 // ============================================================================
+// SUBSCRIPTION SERVICES
+// ============================================================================
+
+export const subscriptionServices = {
+  getSubscription: async () => {
+    return apiClient.get('/subscriptions');
+  },
+
+  createSubscription: async (plan: string, trialDays?: number) => {
+    return apiClient.post('/subscriptions', { plan, trialDays });
+  },
+
+  changePlan: async (plan: string) => {
+    return apiClient.patch('/subscriptions/plan', { plan });
+  },
+
+  cancelSubscription: async (immediately?: boolean) => {
+    return apiClient.delete('/subscriptions', {
+      data: { immediately },
+    });
+  },
+
+  createPayment: async (amount: number, description: string) => {
+    return apiClient.post('/subscriptions/payments', {
+      amount,
+      description,
+    });
+  },
+
+  confirmPayment: async (paymentId: string, paymentMethodId: string) => {
+    return apiClient.post('/subscriptions/payments/confirm', {
+      paymentId,
+      paymentMethodId,
+    });
+  },
+};
+
+// ============================================================================
 // EXPORT ALL SERVICES
 // ============================================================================
 
@@ -161,4 +199,5 @@ export const apiServices = {
   workspace: workspaceServices,
   students: studentServices,
   sessions: sessionServices,
+  subscriptions: subscriptionServices,
 };

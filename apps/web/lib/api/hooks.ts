@@ -239,3 +239,67 @@ export const useUpcomingSessions = (days?: number) => {
     queryFn: () => apiServices.sessions.getUpcoming(days),
   });
 };
+
+// ============================================================================
+// SUBSCRIPTION HOOKS
+// ============================================================================
+
+export const useSubscription = () => {
+  return useQuery({
+    queryKey: ['subscription'],
+    queryFn: () => apiServices.subscriptions.getSubscription(),
+  });
+};
+
+export const useCreateSubscription = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ plan, trialDays }: { plan: string; trialDays?: number }) =>
+      apiServices.subscriptions.createSubscription(plan, trialDays),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['workspace', 'stats'] });
+    },
+  });
+};
+
+export const useChangePlan = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (plan: string) => apiServices.subscriptions.changePlan(plan),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['workspace', 'stats'] });
+    },
+  });
+};
+
+export const useCancelSubscription = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (immediately?: boolean) =>
+      apiServices.subscriptions.cancelSubscription(immediately),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['workspace', 'stats'] });
+    },
+  });
+};
+
+export const useCreatePayment = () => {
+  return useMutation({
+    mutationFn: ({ amount, description }: { amount: number; description: string }) =>
+      apiServices.subscriptions.createPayment(amount, description),
+  });
+};
+
+export const useConfirmPayment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ paymentId, paymentMethodId }: { paymentId: string; paymentMethodId: string }) =>
+      apiServices.subscriptions.confirmPayment(paymentId, paymentMethodId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+    },
+  });
+};

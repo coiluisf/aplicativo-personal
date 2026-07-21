@@ -167,6 +167,44 @@ export interface PaginationParams {
   limit?: number;
 }
 
+// Subscription Types
+export interface Subscription {
+  id: string;
+  workspaceId: string;
+  plan: 'STARTER' | 'PROFESSIONAL' | 'ENTERPRISE';
+  status: 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'ENDED';
+  stripeSubscriptionId: string;
+  stripeCustomerId: string;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  trialEndsAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubscriptionWithLimits {
+  subscription: Subscription;
+  limits: {
+    maxStudents: number;
+    maxSessions: number;
+    price: number;
+  };
+}
+
+export interface Payment {
+  id: string;
+  workspaceId: string;
+  amount: number;
+  status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'REFUNDED';
+  stripePaymentIntentId: string;
+  createdAt: string;
+}
+
+export interface PaymentResponse {
+  payment: Payment;
+  clientSecret: string;
+}
+
 // Error Response
 export interface ErrorResponse {
   error: string;

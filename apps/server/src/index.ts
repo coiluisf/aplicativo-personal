@@ -12,6 +12,7 @@ import { createAuthRoutes } from './routes/auth';
 import { createStudentRoutes } from './routes/students';
 import { createSessionRoutes } from './routes/sessions';
 import { createWorkspaceRoutes } from './routes/workspaces';
+import { createSubscriptionRoutes } from './routes/subscriptions';
 
 // Load env vars
 dotenv.config();
@@ -141,10 +142,7 @@ app.use('/api/auth', createAuthRoutes(prisma));
 app.use('/api/workspaces', createWorkspaceRoutes(prisma));
 app.use('/api/students', createStudentRoutes(prisma));
 app.use('/api/sessions', createSessionRoutes(prisma));
-
-// TODO: Register additional routes
-// app.use('/api/subscriptions', subscriptionRoutes);
-// app.use('/api/webhooks/stripe', stripeWebhookRoutes);
+app.use('/api/subscriptions', createSubscriptionRoutes(prisma));
 
 // ============================================================================
 // 404 HANDLER
