@@ -8,6 +8,7 @@ import rateLimit from 'express-rate-limit';
 import winston from 'winston';
 import { Server as HTTPServer } from 'http';
 import { Server as SocketServer } from 'socket.io';
+import { createAuthRoutes } from './routes/auth';
 
 // Load env vars
 dotenv.config();
@@ -130,8 +131,10 @@ app.get('/api/version', (req: Request, res: Response) => {
   });
 });
 
-// TODO: Import and register routes
-// app.use('/api/auth', authRoutes);
+// Auth routes
+app.use('/api/auth', createAuthRoutes(prisma));
+
+// TODO: Register additional routes
 // app.use('/api/workspaces', workspaceRoutes);
 // app.use('/api/students', studentRoutes);
 // app.use('/api/sessions', sessionRoutes);
