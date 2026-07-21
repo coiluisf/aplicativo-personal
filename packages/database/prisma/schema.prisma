@@ -29,10 +29,11 @@ model User {
 
   // Relations
   workspace       Workspace?
-  sessions        Session[]
+  trainer         Trainer?
+  accounts        Account[]
+  authSessions    AuthSession[]
   notifications   Notification[]
   auditLogs       AuditLog[]
-  sessions_attended Session[] @relation("StudentSessions")
 
   @@index([email])
 }
