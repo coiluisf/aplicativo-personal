@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: trainapp-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: trainapp
+      POSTGRES_PASSWORD: trainapp_dev_password_123
+      POSTGRES_DB: trainapp_dev
+      POSTGRES_INITDB_ARGS: '--encoding=UTF8'
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U trainapp']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Queue
+  redis:
+    image: redis:7-alpine
+    container_name: trainapp-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # pgAdmin (Database UI - optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: trainapp-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@trainapp.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - '5050:80'
+    depends_on:
+      - postgres
+
+  # Redis Commander (Redis UI - optional)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: trainapp-redis-commander
+    restart: unless-stopped
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - '8081:8081'
+    depends_on:
+      - redis
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: trainapp-network
