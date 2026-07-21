@@ -1,12 +1,17 @@
 import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/vercel-geist';
 import { SessionProvider } from 'next-auth/react';
-import { Manrope } from 'next/font/google';
+import { QueryProvider } from '@/lib/providers/query-provider';
 import './globals.css';
 
-const manrope = Manrope({
+const geist = Geist({
+  variable: '--font-geist-sans',
   subsets: ['latin'],
-  weight: ['500', '600', '700', '800'],
-  variable: '--font-manrope',
+});
+
+const geist_mono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
@@ -44,10 +49,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" className={manrope.variable}>
-      <body>
+    <html lang="pt-BR" className={`${geist.variable} ${geist_mono.variable}`}>
+      <body className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 antialiased">
         <SessionProvider>
-          {children}
+          <QueryProvider>
+            {children}
+          </QueryProvider>
         </SessionProvider>
       </body>
     </html>
