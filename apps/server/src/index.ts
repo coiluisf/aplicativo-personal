@@ -9,6 +9,8 @@ import winston from 'winston';
 import { Server as HTTPServer } from 'http';
 import { Server as SocketServer } from 'socket.io';
 import { createAuthRoutes } from './routes/auth';
+import { createStudentRoutes } from './routes/students';
+import { createSessionRoutes } from './routes/sessions';
 
 // Load env vars
 dotenv.config();
@@ -131,13 +133,15 @@ app.get('/api/version', (req: Request, res: Response) => {
   });
 });
 
-// Auth routes
+// Auth routes (no authentication required)
 app.use('/api/auth', createAuthRoutes(prisma));
+
+// Protected routes (authentication required)
+app.use('/api/students', createStudentRoutes(prisma));
+app.use('/api/sessions', createSessionRoutes(prisma));
 
 // TODO: Register additional routes
 // app.use('/api/workspaces', workspaceRoutes);
-// app.use('/api/students', studentRoutes);
-// app.use('/api/sessions', sessionRoutes);
 // app.use('/api/subscriptions', subscriptionRoutes);
 // app.use('/api/webhooks/stripe', stripeWebhookRoutes);
 
