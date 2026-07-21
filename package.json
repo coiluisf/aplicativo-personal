@@ -4,16 +4,11 @@
   "description": "SaaS de agendamentos para personal trainers",
   "private": true,
   "scripts": {
-    "dev": "pnpm -r dev",
-    "build": "pnpm -r build",
-    "start": "pnpm -r start",
-    "lint": "pnpm -r lint",
-    "test": "pnpm -r test",
-    "db:generate": "pnpm --filter database run db:generate",
-    "db:push": "pnpm --filter database run db:push",
-    "db:migrate": "pnpm --filter database run db:migrate",
-    "db:seed": "pnpm --filter database run db:seed",
-    "db:reset": "pnpm --filter database run db:reset"
+    "dev": "npm run dev --workspaces",
+    "build": "npm run build --workspaces",
+    "start": "npm run start --workspaces",
+    "lint": "npm run lint --workspaces",
+    "test": "npm run test --workspaces"
   },
   "keywords": [
     "personal-trainer",
@@ -21,6 +16,5 @@
     "saas"
   ],
   "author": "",
-  "license": "MIT",
-  "packageManager": "pnpm@8.0.0"
+  "license": "MIT"
 }
