@@ -1,8 +1,9 @@
 import { Response, Request } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { SubscriptionService } from '../services/SubscriptionService';
-import { stripeService } from '../services/StripeService';
+import { asaasService } from '../services/AsaasService';
 import { AuthenticatedRequest } from '../middleware/auth';
+import logger from '../utils/logger';
 
 export class SubscriptionController {
   private subscriptionService: SubscriptionService;
@@ -48,35 +49,67 @@ export class SubscriptionController {
         return;
       }
 
-      const planConfig = {
-        STARTER: process.env.STRIPE_PRICE_STARTER,
-        PROFESSIONAL: process.env.STRIPE_PRICE_PROFESSIONAL,
-        ENTERPRISE: process.env.STRIPE_PRICE_ENTERPRISE,
-      }[plan];
+      const planPrices = {
+        STARTER: 49.0,
+        PROFESSIONAL: 99.0,
+        ENTERPRISE: 299.0,
+      };
 
-      if (!planConfig) {
+      const planPrice = planPrices[plan as keyof typeof planPrices];
+
+      if (!planPrice) {
         res.status(400).json({ error: 'Invalid plan' });
         return;
       }
 
-      // Create Stripe subscription
-      const stripeSubscription = await stripeService.createSubscription({
-        email: req.user.email,
-        priceId: planConfig,
-        workspaceId: req.user.workspaceId,
-        trialDays: trialDays || 0,
-      });
+      // Step 1: Create/get customer in Asaas
+      let asaasCustomer;
+      try {
+        asaasCustomer = await asaasService.createCustomer({
+          name: req.user.name,
+          email: req.user.email,
+        });
+      } catch (error) {
+        logger.error('Failed to create Asaas customer', { error });
+        res.status(400).json({ error: 'Failed to create payment customer' });
+        return;
+      }
 
-      // Create in database
+      // Step 2: Create subscription in Asaas
+      let asaasSubscription;
+      try {
+        asaasSubscription = await asaasService.createSubscription({
+          customerId: asaasCustomer.id,
+          value: planPrice,
+          description: `TrainApp ${plan} Plan - Monthly Subscription`,
+          billingType: 'CREDIT_CARD',
+          cycle: 'MONTHLY',
+        });
+      } catch (error) {
+        logger.error('Failed to create Asaas subscription', { error });
+        res.status(400).json({ error: 'Failed to create subscription' });
+        return;
+      }
+
+      // Step 3: Create in database
       const subscription = await this.subscriptionService.createSubscription({
         workspaceId: req.user.workspaceId,
         plan: plan as any,
-        stripeSubscriptionId: stripeSubscription.id,
-        stripeCustomerId: stripeSubscription.customer as string,
+        stripeSubscriptionId: asaasSubscription.id,
+        stripeCustomerId: asaasCustomer.id,
         trialEndsAt: trialDays ? new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000) : undefined,
       });
 
-      res.status(201).json(subscription);
+      res.status(201).json({
+        ...subscription,
+        paymentDetails: {
+          provider: 'asaas',
+          customerId: asaasCustomer.id,
+          subscriptionId: asaasSubscription.id,
+          status: asaasSubscription.status,
+          nextDueDate: asaasSubscription.nextDueDate,
+        },
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create subscription';
       res.status(400).json({ error: message });
@@ -115,6 +148,24 @@ export class SubscriptionController {
 
       const { immediately } = req.body;
 
+      // Get subscription from database
+      const subscription = await this.subscriptionService.getSubscription(req.user.workspaceId);
+
+      if (!subscription || !subscription.stripeSubscriptionId) {
+        res.status(404).json({ error: 'No active subscription found' });
+        return;
+      }
+
+      // Cancel in Asaas
+      try {
+        await asaasService.cancelSubscription(subscription.stripeSubscriptionId);
+      } catch (error) {
+        logger.error('Failed to cancel Asaas subscription', { error });
+        res.status(400).json({ error: 'Failed to cancel subscription with payment provider' });
+        return;
+      }
+
+      // Cancel in database
       const updated = await this.subscriptionService.cancelSubscription(
         req.user.workspaceId,
         immediately || false,
@@ -179,31 +230,46 @@ export class SubscriptionController {
 
   async webhookHandler(req: Request, res: Response): Promise<void> {
     try {
-      const signature = req.headers['stripe-signature'] as string;
-      const event = stripeService.verifyWebhookSignature(req.body, signature);
+      // Validate Asaas webhook signature
+      const asaasToken = req.headers['x-asaas-access-token'] as string;
 
-      switch (event.type) {
-        case 'customer.subscription.created':
-        case 'customer.subscription.updated':
-          await this.subscriptionService.syncFromStripe(event.data.object.id);
-          break;
-
-        case 'customer.subscription.deleted':
-          // Handle subscription deletion
-          break;
-
-        case 'invoice.payment_succeeded':
-          // Handle payment success
-          break;
-
-        case 'invoice.payment_failed':
-          // Handle payment failure
-          break;
+      if (!asaasService.validateWebhook(asaasToken, req.body)) {
+        logger.warn('Invalid Asaas webhook signature');
+        res.status(401).json({ error: 'Invalid signature' });
+        return;
       }
 
-      res.status(200).json({ received: true });
+      // Process webhook event
+      const result = await asaasService.processWebhookEvent(req.body);
+
+      switch (result.action) {
+        case 'PAYMENT_CONFIRMED':
+        case 'SUBSCRIPTION_ACTIVE':
+          // Payment confirmed - subscription is active
+          logger.info('Payment confirmed', { data: result.data });
+          // Could sync subscription status here if needed
+          break;
+
+        case 'PAYMENT_FAILED':
+          // Payment failed - notify user
+          logger.warn('Payment failed', { data: result.data });
+          // Could trigger email notification here
+          break;
+
+        case 'SUBSCRIPTION_INACTIVE':
+          // Subscription cancelled
+          logger.info('Subscription cancelled', { data: result.data });
+          // Could update database status here
+          break;
+
+        default:
+          logger.info('Webhook processed', { action: result.action });
+      }
+
+      res.status(200).json({ received: true, action: result.action });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Webhook processing failed';
+      logger.error('Webhook processing error', { message });
       res.status(400).json({ error: message });
     }
   }
