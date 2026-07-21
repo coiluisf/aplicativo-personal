@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrainApp - Personal Trainer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding-top: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            background: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #667eea;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .phone-frame {
+            background: white;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .phone-screen {
+            background: #0a0e27;
+            border-radius: 32px;
+            height: 800px;
+            overflow-y: auto;
+            padding: 20px;
+            color: white;
+            display: none;
+        }
+
+        .phone-screen.active {
+            display: block;
+        }
+
+        .screen-header {
+            padding-top: 40px;
+            margin-bottom: 30px;
+        }
+
+        .screen-header h2 {
+            font-size: 2em;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .screen-header p {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .session-card {
+            background: #1a1f3a;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .session-card:hover {
+            background: #242a48;
+            transform: translateX(5px);
+        }
+
+        .session-time {
+            font-weight: 800;
+            font-size: 1.2em;
+            min-width: 60px;
+        }
+
+        .session-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .session-info {
+            flex: 1;
+        }
+
+        .session-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .session-status {
+            font-size: 0.8em;
+            color: #667eea;
+        }
+
+        .student-card {
+            background: #1a1f3a;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .student-card:hover {
+            background: #242a48;
+        }
+
+        .student-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .student-details {
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .student-schedule {
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        .status-badge {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        .status-badge.pending {
+            background: #f59e0b;
+        }
+
+        .day-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .day-btn {
+            background: #1a1f3a;
+            border: none;
+            color: #999;
+            padding: 10px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            min-width: 50px;
+            text-align: center;
+            transition: all 0.3s;
+            font-size: 0.8em;
+        }
+
+        .day-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .day-btn:hover {
+            background: #242a48;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #764ba2;
+        }
+
+        .btn-secondary {
+            background: #1a1f3a;
+            color: #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #242a48;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .info-box {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #ddd;
+        }
+
+        .divider {
+            height: 1px;
+            background: #1a1f3a;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .phone-frame {
+                padding: 8px;
+            }
+
+            .phone-screen {
+                height: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏋️ TrainApp</h1>
+            <p>SaaS de Agendamentos para Personal Trainers</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('personal')">👤 Personal</button>
+            <button class="tab-btn" onclick="switchTab('aluno')">📱 Aluno</button>
+        </div>
+
+        <div class="phone-frame">
+            <!-- PERSONAL TAB -->
+            <div id="personal" class="phone-screen active">
+                <div class="screen-header">
+                    <h2>Agenda</h2>
+                    <p>Olá, Jadson — sua semana de treinos</p>
+                </div>
+
+                <div class="day-selector">
+                    <button class="day-btn active" onclick="selectDay(this)">Seg 13</button>
+                    <button class="day-btn" onclick="selectDay(this)">Ter 14</button>
+                    <button class="day-btn" onclick="selectDay(this)">Qua 15</button>
+                    <button class="day-btn" onclick="selectDay(this)">Qui 16</button>
+                    <button class="day-btn" onclick="selectDay(this)">Sex 17</button>
+                    <button class="day-btn" onclick="selectDay(this)">Sáb 18</button>
+                </div>
+
+                <div id="sessions-list">
+                    <div class="session-card">
+                        <div class="session-time">06:00</div>
+                        <div class="session-avatar">JC</div>
+                        <div class="session-info">
+                            <div class="session-name">Júlia Costa</div>
+                            <div class="session-status">Confirmado</div>
+                        </div>
+                    </div>
+
+                    <div class="session-card">
+                        <div class="session-time">07:00</div>
+                        <div class="session-avatar">MS</div>
+                        <div class="session-info">
+                            <div class="session-name">Marina Silva</div>
+                            <div class="session-status">Confirmado</div>
+                        </div>
+                    </div>
+
+                    <div class="session-card">
+                        <div class="session-time">18:00</div>
+                        <div class="session-avatar">RS</div>
+                        <div class="session-info">
+                            <div class="session-name">Rafael Souza</div>
+                            <div class="session-status">Confirmado</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="switchToTab('students')">👥 Alunos</button>
+                    <button class="btn btn-primary" onclick="alert('Função: Ver Relatório')">📊 Relatório</button>
+                </div>
+            </div>
+
+            <!-- ALUNO TAB -->
+            <div id="aluno" class="phone-screen">
+                <div class="screen-header">
+                    <h2>Agendar</h2>
+                    <p>Escolha dia e horário com Jadson</p>
+                </div>
+
+                <div class="info-box">
+                    ℹ️ Você tem <strong>4 sessões</strong> disponíveis no seu plano
+                </div>
+
+                <div class="day-selector">
+                    <button class="day-btn active" onclick="selectDay(this)">Seg 13</button>
+                    <button class="day-btn" onclick="selectDay(this)">Ter 14</button>
+                    <button class="day-btn" onclick="selectDay(this)">Qua 15</button>
+                    <button class="day-btn" onclick="selectDay(this)">Qui 16</button>
+                    <button class="day-btn" onclick="selectDay(this)">Sex 17</button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="selectTime(this, '06:00')">06:00</button>
+                    <button class="btn btn-secondary" onclick="selectTime(this, '07:00')">07:00</button>
+                    <button class="btn btn-secondary" onclick="selectTime(this, '08:00')">08:00</button>
+                    <button class="btn btn-secondary" onclick="selectTime(this, '17:00')">17:00</button>
+                    <button class="btn btn-secondary" onclick="selectTime(this, '18:00')">18:00</button>
+                    <button class="btn btn-secondary" onclick="selectTime(this, '19:00')">19:00</button>
+                </div>
+
+                <div class="divider"></div>
+
+                <button class="btn btn-primary" onclick="confirmBooking()" style="margin-top: 20px;">✓ Confirmar Agendamento</button>
+            </div>
+
+            <!-- STUDENTS LIST -->
+            <div id="students" class="phone-screen">
+                <div class="screen-header">
+                    <h2>Alunos</h2>
+                    <p>5 alunos ativos</p>
+                </div>
+
+                <div class="student-card" onclick="alert('Marina Silva - Plano Mensal - Pago')">
+                    <div class="student-avatar">MS</div>
+                    <div class="student-details">
+                        <div class="student-name">Marina Silva</div>
+                        <div class="student-schedule">Seg, Qua, Sex · 07:00</div>
+                    </div>
+                    <div class="status-badge">Pago</div>
+                </div>
+
+                <div class="student-card" onclick="alert('Carlos Mendes - Plano Trimestral - Pendente')">
+                    <div class="student-avatar">CM</div>
+                    <div class="student-details">
+                        <div class="student-name">Carlos Mendes</div>
+                        <div class="student-schedule">Ter, Qui · 18:30</div>
+                    </div>
+                    <div class="status-badge pending">Pendente</div>
+                </div>
+
+                <div class="student-card" onclick="alert('Júlia Costa - Plano Mensal - Pago')">
+                    <div class="student-avatar">JC</div>
+                    <div class="student-details">
+                        <div class="student-name">Júlia Costa</div>
+                        <div class="student-schedule">Seg, Qua, Sex · 06:00</div>
+                    </div>
+                    <div class="status-badge">Pago</div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="switchToTab('personal')">← Voltar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedTime = null;
+
+        function switchTab(tab) {
+            // Hide all
+            document.querySelectorAll('.phone-screen').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show selected
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+
+            // Reset students view
+            document.getElementById('students').classList.remove('active');
+        }
+
+        function switchToTab(tab) {
+            document.querySelectorAll('.phone-screen').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.getElementById(tab).classList.add('active');
+        }
+
+        function selectDay(btn) {
+            document.querySelectorAll('.day-btn').forEach(el => {
+                el.classList.remove('active');
+            });
+            btn.classList.add('active');
+        }
+
+        function selectTime(btn, time) {
+            document.querySelectorAll('.btn-secondary').forEach(el => {
+                if (el !== btn) el.classList.remove('active');
+            });
+            btn.classList.add('active');
+            selectedTime = time;
+        }
+
+        function confirmBooking() {
+            if (!selectedTime) {
+                alert('Selecione um horário!');
+                return;
+            }
+            alert(`✓ Agendamento confirmado para ${selectedTime}!\n\nVocê receberá um email de confirmação.`);
+            selectedTime = null;
+        }
+    </script>
+</body>
+</html>
