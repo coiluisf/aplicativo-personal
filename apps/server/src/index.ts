@@ -11,6 +11,7 @@ import { Server as SocketServer } from 'socket.io';
 import { createAuthRoutes } from './routes/auth';
 import { createStudentRoutes } from './routes/students';
 import { createSessionRoutes } from './routes/sessions';
+import { createWorkspaceRoutes } from './routes/workspaces';
 
 // Load env vars
 dotenv.config();
@@ -137,11 +138,11 @@ app.get('/api/version', (req: Request, res: Response) => {
 app.use('/api/auth', createAuthRoutes(prisma));
 
 // Protected routes (authentication required)
+app.use('/api/workspaces', createWorkspaceRoutes(prisma));
 app.use('/api/students', createStudentRoutes(prisma));
 app.use('/api/sessions', createSessionRoutes(prisma));
 
 // TODO: Register additional routes
-// app.use('/api/workspaces', workspaceRoutes);
 // app.use('/api/subscriptions', subscriptionRoutes);
 // app.use('/api/webhooks/stripe', stripeWebhookRoutes);
 
