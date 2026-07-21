@@ -35,19 +35,21 @@ Uma plataforma SaaS completa para personal trainers gerenciarem seus alunos, age
 
 ## 🚀 Quick Start
 
+> ⚠️ **Para setup detalhado e troubleshooting**, veja [SETUP_GUIDE.md](./SETUP_GUIDE.md)
+
 ### Pré-requisitos
 
-- **Node.js** 20+
+- **Node.js** 18+
 - **pnpm** 8+ (ou npm/yarn)
-- **PostgreSQL** 14+
+- **Docker & Docker Compose** (para PostgreSQL e Redis)
 - **Git**
 
-### Instalação Local
+### Instalação Rápida (5 minutos)
 
 1. **Clone o repositório**
 ```bash
-git clone https://github.com/seu-usuario/train-app.git
-cd train-app
+git clone https://github.com/coiluisf/aplicativo-personal.git
+cd aplicativo-personal
 ```
 
 2. **Instale dependências**
@@ -56,32 +58,34 @@ pnpm install
 ```
 
 3. **Configure variáveis de ambiente**
-
-Backend:
 ```bash
-cp apps/server/.env.example apps/server/.env.local
-# Editar apps/server/.env.local com suas credenciais
-```
-
-Frontend:
-```bash
+# Copiar arquivos de exemplo
+cp .env.example .env
+cp apps/server/.env.example apps/server/.env
 cp apps/web/.env.example apps/web/.env.local
-# Editar apps/web/.env.local
 ```
 
-4. **Configure banco de dados**
+4. **Inicie Docker (banco de dados)**
 ```bash
+# Subir PostgreSQL, Redis, pgAdmin
+docker-compose up -d
+
+# Verificar se está tudo ok
+docker-compose ps
+```
+
+5. **Configure banco de dados**
+```bash
+cd packages/database
+
 # Gerar Prisma client
-pnpm db:generate
+pnpm prisma generate
 
 # Executar migrations
-pnpm db:push
-
-# (Opcional) Seed com dados de teste
-pnpm db:seed
+pnpm prisma migrate dev --name init
 ```
 
-5. **Inicie os servidores**
+6. **Inicie os servidores**
 
 Terminal 1 - Backend:
 ```bash
@@ -96,6 +100,8 @@ cd apps/web
 pnpm dev
 # App rodando em http://localhost:3000
 ```
+
+**Pronto! Acesse http://localhost:3000 para começar**
 
 ---
 
@@ -330,11 +336,11 @@ Acessar logs via:
 
 ## 📚 Documentação Adicional
 
-- [API Reference](./docs/API.md)
-- [Database Schema](./docs/DATABASE.md)
-- [Setup Detalhado](./docs/SETUP.md)
-- [Deployment Guide](./docs/DEPLOYMENT.md)
-- [Arquitetura SaaS](./SAAS_PLAN.md)
+- **[Setup Guia Completo](./SETUP_GUIDE.md)** - Instruções detalhadas para iniciar o projeto
+- **[API Endpoints](./API_ENDPOINTS.md)** - Documentação completa de todos os endpoints REST
+- **[Plano SaaS](./SAAS_PLAN.md)** - Estratégia de negócio, modelo de pricing e roadmap
+- **[Database Schema](./packages/database/prisma/schema.prisma)** - Schema Prisma completo
+- **[Architecture](./SAAS_PLAN.md#arquitetura)** - Diagrama e decisões arquiteturais
 
 ---
 
@@ -349,27 +355,33 @@ Acessar logs via:
 
 ## 📝 Roadmap
 
-### Fase 1: MVP (Semana 1-4)
-- [x] Autenticação
-- [x] CRUD de alunos
-- [x] Agendamento básico
-- [x] Integração Stripe
-- [ ] Email notifications
-- [ ] Deploy inicial
+### Fase 1: MVP ✅ (Em Desenvolvimento)
+- [x] Autenticação JWT + OAuth
+- [x] CRUD de alunos com busca
+- [x] Agendamento de sessões
+- [x] Workspace multi-tenant
+- [x] API REST completa com 25+ endpoints
+- [x] Frontend API client com React Query
+- [x] Dashboard básico
+- [ ] Integração Stripe (próximo)
+- [ ] Email notifications (próximo)
+- [ ] Deploy staging (próximo)
 
-### Fase 2: V1 (Semana 5-8)
+### Fase 2: V1 (Estável)
 - [ ] Analytics dashboard
 - [ ] Programa de treino
 - [ ] Upload de fotos
 - [ ] Mobile responsive
-- [ ] Testes E2E
+- [ ] Testes E2E (Cypress/Playwright)
+- [ ] Relatórios em PDF
 
-### Fase 3: Growth (Semana 9-16)
-- [ ] Chat em tempo real
-- [ ] App mobile nativo
-- [ ] Integrações (Google Calendar)
+### Fase 3: Growth
+- [ ] Chat em tempo real via WebSocket
+- [ ] Notificações push
+- [ ] Integrações (Google Calendar, Zoom)
 - [ ] Marketplace de personais
-- [ ] Programa de afiliados
+- [ ] Sistema de afiliados
+- [ ] App mobile nativo
 
 ---
 
